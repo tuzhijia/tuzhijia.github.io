@@ -3,118 +3,144 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>秃秃の图片加工站</title>
+  <title>秃秃の图片加工站 - 首页</title>
   <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
   <style>
     body {
       margin: 0;
+      font-family: 'ZCOOL KuaiLe', cursive;
       background-color: #FCF9EF;
       color: #3D1E16;
-      font-family: 'ZCOOL KuaiLe', cursive;
       position: relative;
+      overflow-x: hidden;
     }
-    .menu-btn {
+    header {
+      text-align: center;
+      padding: 1em 0;
+      font-size: 2em;
+      color: #3D1E16;
+    }
+    /* Left dynamic image */
+    #left-gif {
+      position: absolute;
+      top: 50px;
+      left: 10px;
+      width: 80px;
+      height: auto;
+      z-index: 1;
+    }
+    /* Side navigation menu */
+    .sidenav {
+      height: 100%;
+      width: 0;
       position: fixed;
+      z-index: 4;
+      top: 0;
+      left: 0;
+      background-color: #FDC2CF;
+      overflow-x: hidden;
+      transition: 0.5s;
+      padding-top: 60px;
+    }
+    .sidenav a {
+      padding: 8px 8px 8px 32px;
+      display: block;
+      font-size: 1.5em;
+      color: #3D1E16;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+    .sidenav a:hover {
+      background-color: #FFF3C7;
+    }
+    .sidenav .closebtn {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 2em;
+      cursor: pointer;
+    }
+    /* Hamburger icon */
+    .hamburger {
+      font-size: 2em;
+      position: absolute;
       top: 10px;
       left: 10px;
-      font-size: 28px;
-      background-color: #FDC2CF;
-      color: #3D1E16;
-      padding: 8px 12px;
-      border-radius: 5px;
       cursor: pointer;
-      z-index: 1000;
-      border: 2px solid #3D1E16;
+      color: #3D1E16;
+      z-index: 5;
+      background: none;
+      border: none;
     }
-    #menuToggle {
-      display: none;
-    }
-    .sidebar {
+    /* Top decoration */
+    .top-decor {
       position: fixed;
       top: 0;
-      left: -200px;
-      width: 160px;
-      height: 100%;
-      background-color: #FFF3C7;
-      padding-top: 60px;
-      transition: left 0.3s ease;
-      border-right: 2px dashed #FDC2CF;
+      right: 0;
+      width: 150px;
+      z-index: 0;
+      pointer-events: none;
     }
-    .sidebar a {
-      display: block;
-      color: #3D1E16;
-      padding: 12px 16px;
-      text-decoration: none;
-      font-size: 18px;
-    }
-    .sidebar a:hover {
-      background-color: #FDC2CF;
-      color: #fff;
-      border-radius: 4px;
-    }
-    #menuToggle:checked ~ .sidebar {
+    /* Bottom decoration */
+    .bottom-decor {
+      position: fixed;
+      bottom: 0;
       left: 0;
+      width: 150px;
+      z-index: 0;
+      pointer-events: none;
+    }
+    /* Container for page content */
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      box-sizing: border-box;
     }
     .content {
-      max-width: 600px;
-      margin: 80px auto 20px;
-      background-color: #FFF3C7;
-      border: 3px dashed #FDC2CF;
-      border-radius: 15px;
-      padding: 20px;
+      padding-top: 160px;
+      padding-bottom: 160px;
       text-align: center;
     }
-    .content img.logo {
-      width: 50%;
-      max-width: 400px;
-      height: auto;
-    }
-    .content h1 {
-      margin: 16px 0 12px;
-      font-size: 2em;
-      font-weight: bold;
-      color: #3D1E16;
+    .content h2 {
+      font-size: 1.8em;
+      margin: 0.5em 0;
     }
     .content p {
-      font-size: 1.1em;
-      line-height: 1.5;
-      margin: 0;
-      color: #3D1E16;
-    }
-    .decor {
-      position: fixed;
-      width: 100px;
-      z-index: 500;
-    }
-    .decor.top-left {
-      top: 60px;
-      left: 10px;
-    }
-    .decor.top-right {
-      top: 60px;
-      right: 10px;
-    }
-    .decor.bottom-center {
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
+      line-height: 1.6;
     }
   </style>
 </head>
 <body>
-  <input type="checkbox" id="menuToggle" />
-  <label for="menuToggle" class="menu-btn">&#9776;</label>
-  <nav class="sidebar">
+  <!-- Top decoration image -->
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Sheldon_With_Carrot.gif/960px-Sheldon_With_Carrot.gif" alt="Sheldon the bunny" class="top-decor">
+  <!-- Left top dynamic image -->
+  <img src="https://tc.z.wiki/autoupload/f/L7pmi-Gn50Alt41zWohg0qrqKxwR0n1kQhJ7sNM0ESs/20250806/iecv/360X400/mmexport1754418771540.gif" alt="动态图片" id="left-gif">
+  <!-- Sidebar navigation -->
+  <div id="mySidenav" class="sidenav">
+    <span class="closebtn" onclick="closeNav()">&times;</span>
     <a href="index.html">首页</a>
     <a href="pintu.html">秃秃の拼图器</a>
-  </nav>
-  <img src="https://tc-new.z.wiki/autoupload/f/L7pmi-Gn50Alt41zWohg0qrqKxwR0n1kQhJ7sNM0ESs/20250806/PnxS/240X240/mmexport1754415156924.gif" alt="装饰1" class="decor top-left">
-  <img src="https://tc-new.z.wiki/autoupload/f/L7pmi-Gn50Alt41zWohg0qrqKxwR0n1kQhJ7sNM0ESs/20250806/OksP/240X240/mmexport1754415176673.gif" alt="装饰2" class="decor top-right">
-  <img src="https://tc-new.z.wiki/autoupload/f/L7pmi-Gn50Alt41zWohg0qrqKxwR0n1kQhJ7sNM0ESs/20250806/tOxY/218X240/mmexport1754415170552.gif" alt="装饰3" class="decor bottom-center">
-  <div class="content">
-    <img src="https://tc-new.z.wiki/autoupload/f/L7pmi-Gn50Alt41zWohg0qrqKxwR0n1kQhJ7sNM0ESs/20250806/uBV2/1498X1438/retouch_2025080601311277.png" alt="秃秃のLogo" class="logo">
-    <h1>秃秃の图片加工站</h1>
-    <p>欢迎来到秃秃の图片加工站！这是一个可爱的图片拼图加工平台。您可以上传多张图片生成拼图，并自定义背景颜色。希望您喜欢使用我们的工具，为您的图片添加趣味拼图效果！</p>
   </div>
+  <!-- Hamburger menu button -->
+  <span class="hamburger" onclick="openNav()">&#9776;</span>
+  <!-- Page content -->
+  <div class="container">
+    <header>秃秃の图片加工站</header>
+    <div class="content">
+      <h2>欢迎来到秃秃の图片加工站</h2>
+      <p>这里是加工站的首页，使用左上角的菜单可以导航到不同页面。</p>
+      <p>可以通过我们的拼图工具将你的快速拼接且标序号，未来还会增加一键水印、一键边框等功能，敬请期待～</p>
+    </div>
+  </div>
+  <!-- Bottom decoration image -->
+  <img src="https://upload.wikimedia.org/wikipedia/commons/f/f9/Rabbit_0068.gif" alt="可爱兔子" class="bottom-decor">
+  <script>
+    function openNav() {
+      document.getElementById("mySidenav").style.width = "250px";
+    }
+    function closeNav() {
+      document.getElementById("mySidenav").style.width = "0";
+    }
+  </script>
 </body>
 </html>
