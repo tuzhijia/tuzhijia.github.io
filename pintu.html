@@ -41,8 +41,7 @@
       gap: 1em;
       flex-wrap: wrap;
     }
-    input[type="number"], input[type="file"], input[type="color"], 
-    input[type="text"] {
+    input[type="number"], input[type="file"], input[type="color"], input[type="text"] {
       flex: 1;
       padding: 0.5em;
     }
@@ -76,9 +75,23 @@
       padding: 1em;
       margin-top: 1em;
     }
+    .menu-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      font-size: 28px;
+      background-color: #ffb6c1;
+      color: #3D1E16;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      z-index: 1000;
+      border: 2px solid #3D1E16;
+    }
   </style>
 </head>
 <body class="light">
+  <a href="index.html" class="menu-btn">&#9776;</a>
   <header>秃秃の拼图器</header>
   <div class="container">
     <div class="row">
@@ -139,21 +152,20 @@
     const bgHexColor = document.getElementById('bgHexColor');
     const bgColorPicker = document.getElementById('bgColorPicker');
     const numberMode = document.getElementById('numberMode');
-
+    
     let theme = 'light';
     let bgImage = null;
     let numbersVisible = false;
     let originalImageData = null;
-
+    
     colorPicker.addEventListener('input', () => {
       hexColor.value = colorPicker.value;
     });
-
+    
     hexColor.addEventListener('input', () => {
       colorPicker.value = hexColor.value;
     });
-
-    // Initialize background color inputs
+    
     bgHexColor.value = bgColorPicker.value;
     bgColorPicker.addEventListener('input', () => {
       bgHexColor.value = bgColorPicker.value;
@@ -161,7 +173,7 @@
     bgHexColor.addEventListener('input', () => {
       bgColorPicker.value = bgHexColor.value;
     });
-
+    
     bgInput.addEventListener('change', () => {
       const file = bgInput.files[0];
       if (!file) return;
@@ -180,7 +192,7 @@
       };
       reader.readAsDataURL(file);
     });
-
+    
     function setTheme(mode) {
       theme = mode;
       document.body.className = mode;
@@ -192,18 +204,15 @@
         document.body.style.backgroundImage = 'none';
       }
     }
-
+    
     async function generateGrid() {
       numbersVisible = false;
       originalImageData = null;
-
+    
       const files = document.getElementById('images').files;
       const rows = parseInt(document.getElementById('rows').value);
       const cols = parseInt(document.getElementById('cols').value);
-
       const images = await Promise.all([...files].map(file => loadImage(file)));
-
-      // 检查所有图片是否同一比例
       if (images.length > 0) {
         const firstRatio = getAspectRatio(images[0]);
         if (!images.every(img => getAspectRatio(img) === firstRatio)) {
@@ -211,20 +220,16 @@
           return;
         }
       }
-
       const imgWidth = images[0] ? images[0].width : 0;
       const imgHeight = images[0] ? images[0].height : 0;
-
       canvas.width = cols * imgWidth;
       canvas.height = rows * imgHeight;
-
       if (theme === 'custom' && bgImage) {
         ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
       } else {
-        ctx.fillStyle = bgHexColor.value || '#FFB7C5'; // 浅樱花粉 默认
+        ctx.fillStyle = bgHexColor.value || '#FFB7C5';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
-
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const idx = r * cols + c;
@@ -233,14 +238,11 @@
           }
         }
       }
-
-      // Store the original puzzle image data without numbers
       originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     }
-
+    
     function toggleNumbers() {
       if (!originalImageData) {
-        // No puzzle to label
         return;
       }
       const rows = parseInt(document.getElementById('rows').value);
@@ -248,14 +250,12 @@
       const pieceWidth = canvas.width / cols;
       const pieceHeight = canvas.height / rows;
       const imagesCount = document.getElementById('images').files.length;
-
+    
       if (!numbersVisible) {
-        // Show numbers
-        ctx.putImageData(originalImageData, 0, 0); // ensure start from original
+        ctx.putImageData(originalImageData, 0, 0);
         ctx.textAlign = 'center';
         ctx.fillStyle = hexColor.value || '#ffffff';
         if (numberMode.value === 'normal') {
-          // 普通标序号
           ctx.font = `bold ${pieceHeight/5}px ZCOOL KuaiLe`;
           ctx.textBaseline = 'bottom';
           for (let i = 0; i < imagesCount; i++) {
@@ -265,8 +265,7 @@
             const y = r * pieceHeight + pieceHeight - (pieceHeight * 0.05);
             ctx.fillText((i+1).toString(), x, y);
           }
-        } else if (numberMode.value === 'four-grid') {
-          // 四宫格标序号
+        } else {
           ctx.font = `bold ${pieceHeight/10}px ZCOOL KuaiLe`;
           ctx.textBaseline = 'bottom';
           let number = 1;
@@ -279,35 +278,26 @@
             const subHeight = pieceHeight / 2;
             const offsetTop = pieceHeight * 0.025;
             const offsetBottom = pieceHeight * 0.05;
-            // Top-left
             const xTL = baseX + subWidth / 2;
             const yTL = baseY + subHeight - offsetTop;
-            ctx.fillText(number.toString(), xTL, yTL);
-            number++;
-            // Top-right
+            ctx.fillText(number.toString(), xTL, yTL); number++;
             const xTR = baseX + 3 * subWidth / 2;
             const yTR = baseY + subHeight - offsetTop;
-            ctx.fillText(number.toString(), xTR, yTR);
-            number++;
-            // Bottom-left
+            ctx.fillText(number.toString(), xTR, yTR); number++;
             const xBL = baseX + subWidth / 2;
             const yBL = baseY + pieceHeight - offsetBottom;
-            ctx.fillText(number.toString(), xBL, yBL);
-            number++;
-            // Bottom-right
+            ctx.fillText(number.toString(), xBL, yBL); number++;
             const xBR = baseX + 3 * subWidth / 2;
             const yBR = baseY + pieceHeight - offsetBottom;
-            ctx.fillText(number.toString(), xBR, yBR);
-            number++;
+            ctx.fillText(number.toString(), xBR, yBR); number++;
           }
         }
       } else {
-        // Hide numbers: restore original image
         ctx.putImageData(originalImageData, 0, 0);
       }
       numbersVisible = !numbersVisible;
     }
-
+    
     function loadImage(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -320,11 +310,11 @@
         reader.readAsDataURL(file);
       });
     }
-
+    
     function getAspectRatio(img) {
       return (img.width / img.height).toFixed(2);
     }
-
+    
     function downloadImage() {
       const link = document.createElement('a');
       link.download = '拼图.png';
