@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>秃秃の拼图器</title>
+  <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'ZCOOL KuaiLe', cursive;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    body.light {
+      background-color: #FFE4E1;
+      color: #000;
+    }
+    body.dark {
+      background-color: #000000;
+      color: #fff;
+    }
+    /* For custom background, let the body background-image handle appearance */
+    header {
+      text-align: center;
+      padding: 1em;
+      font-size: 1.5em;
+      border: 4px dashed #FDC2CF;
+      border-radius: 8px;
+    }
+    .container {
+      padding: 1em;
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      max-width: 600px;
+      margin: auto;
+    }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 1em;
+      flex-wrap: wrap;
+    }
+    input[type="number"], input[type="file"], input[type="color"], 
+    input[type="text"] {
+      flex: 1;
+      padding: 0.5em;
+    }
+    button {
+      padding: 0.7em 1.2em;
+      background-color: #ffb6c1;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #ff8aa1;
+    }
+    canvas {
+      max-width: 100%;
+      height: auto;
+      border: 2px dashed #aaa;
+      display: block;
+      margin: auto;
+    }
+    .theme-switcher {
+      display: flex;
+      gap: 0.5em;
+    }
+    .hidden {
+      display: none;
+    }
+    .bg-upload-section {
+      border: 1px dashed #ccc;
+      padding: 1em;
+      margin-top: 1em;
+    }
+  </style>
+</head>
+<body class="light">
+  <header>秃秃の拼图器</header>
+  <div class="container">
+    <div class="row">
+      <label>选择拼图图片：</label>
+      <input type="file" id="images" multiple accept="image/*">
+    </div>
+    <div class="row">
+      <label>行：</label>
+      <input type="number" id="rows" value="3" min="1">
+    </div>
+    <div class="row">
+      <label>列：</label>
+      <input type="number" id="cols" value="3" min="1">
+    </div>
+    <div class="row">
+      <label>序号颜色：</label>
+      <input type="color" id="colorPicker" value="#ffffff">
+      <input type="text" id="hexColor" placeholder="#ffffff">
+    </div>
+    <div class="row">
+      <label>背景颜色：</label>
+      <input type="color" id="bgColorPicker" value="#FFB7C5">
+      <input type="text" id="bgHexColor" placeholder="#FFB7C5">
+    </div>
+    <div class="row">
+      <label>拼图预览：</label>
+    </div>
+    <canvas id="preview"></canvas>
+    <div class="row">
+      <label>标序号模式：</label>
+      <select id="numberMode">
+        <option value="normal">普通标序号</option>
+        <option value="four-grid">四宫格标序号</option>
+      </select>
+    </div>
+    <div class="row">
+      <button onclick="generateGrid()">生成拼图</button>
+      <button onclick="downloadImage()">下载图片</button>
+      <button onclick="toggleNumbers()">标序号</button>
+    </div>
+    <div class="row theme-switcher">
+      <button onclick="setTheme('light')">☀️ 白天</button>
+      <button onclick="setTheme('dark')">🌙 深夜</button>
+      <button onclick="setTheme('custom')">🖼️ 自定义</button>
+    </div>
+    <div class="bg-upload-section hidden" id="bgUploader">
+      <label>上传自定义背景：</label>
+      <input type="file" id="bgInput" accept="image/*">
+    </div>
+  </div>  
+  <script>
+    const canvas = document.getElementById('preview');
+    const ctx = canvas.getContext('2d');
+    const hexColor = document.getElementById('hexColor');
+    const colorPicker = document.getElementById('colorPicker');
+    const bgUploader = document.getElementById('bgUploader');
+    const bgInput = document.getElementById('bgInput');
+    const bgHexColor = document.getElementById('bgHexColor');
+    const bgColorPicker = document.getElementById('bgColorPicker');
+    const numberMode = document.getElementById('numberMode');
+
+    let theme = 'light';
+    let bgImage = null;
+    let numbersVisible = false;
+    let originalImageData = null;
+
+    colorPicker.addEventListener('input', () => {
+      hexColor.value = colorPicker.value;
+    });
+
+    hexColor.addEventListener('input', () => {
+      colorPicker.value = hexColor.value;
+    });
+
+    // Initialize background color inputs
+    bgHexColor.value = bgColorPicker.value;
+    bgColorPicker.addEventListener('input', () => {
+      bgHexColor.value = bgColorPicker.value;
+    });
+    bgHexColor.addEventListener('input', () => {
+      bgColorPicker.value = bgHexColor.value;
+    });
+
+    bgInput.addEventListener('change', () => {
+      const file = bgInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          bgImage = img;
+        };
+        img.src = reader.result;
+        if (theme === 'custom') {
+          document.body.style.backgroundImage = `url('${reader.result}')`;
+          document.body.style.backgroundSize = 'cover';
+          document.body.style.backgroundPosition = 'center';
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function setTheme(mode) {
+      theme = mode;
+      document.body.className = mode;
+      if (mode === 'custom') {
+        bgUploader.classList.remove('hidden');
+      } else {
+        bgUploader.classList.add('hidden');
+        bgImage = null;
+        document.body.style.backgroundImage = 'none';
+      }
+    }
+
+    async function generateGrid() {
+      numbersVisible = false;
+      originalImageData = null;
+
+      const files = document.getElementById('images').files;
+      const rows = parseInt(document.getElementById('rows').value);
+      const cols = parseInt(document.getElementById('cols').value);
+
+      const images = await Promise.all([...files].map(file => loadImage(file)));
+
+      // 检查所有图片是否同一比例
+      if (images.length > 0) {
+        const firstRatio = getAspectRatio(images[0]);
+        if (!images.every(img => getAspectRatio(img) === firstRatio)) {
+          alert('所有图片必须为相同比例！');
+          return;
+        }
+      }
+
+      const imgWidth = images[0] ? images[0].width : 0;
+      const imgHeight = images[0] ? images[0].height : 0;
+
+      canvas.width = cols * imgWidth;
+      canvas.height = rows * imgHeight;
+
+      if (theme === 'custom' && bgImage) {
+        ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+      } else {
+        ctx.fillStyle = bgHexColor.value || '#FFB7C5'; // 浅樱花粉 默认
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const idx = r * cols + c;
+          if (images[idx]) {
+            ctx.drawImage(images[idx], c * imgWidth, r * imgHeight);
+          }
+        }
+      }
+
+      // Store the original puzzle image data without numbers
+      originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+
+    function toggleNumbers() {
+      if (!originalImageData) {
+        // No puzzle to label
+        return;
+      }
+      const rows = parseInt(document.getElementById('rows').value);
+      const cols = parseInt(document.getElementById('cols').value);
+      const pieceWidth = canvas.width / cols;
+      const pieceHeight = canvas.height / rows;
+      const imagesCount = document.getElementById('images').files.length;
+
+      if (!numbersVisible) {
+        // Show numbers
+        ctx.putImageData(originalImageData, 0, 0); // ensure start from original
+        ctx.textAlign = 'center';
+        ctx.fillStyle = hexColor.value || '#ffffff';
+        if (numberMode.value === 'normal') {
+          // 普通标序号
+          ctx.font = `bold ${pieceHeight/5}px ZCOOL KuaiLe`;
+          ctx.textBaseline = 'bottom';
+          for (let i = 0; i < imagesCount; i++) {
+            const r = Math.floor(i / cols);
+            const c = i % cols;
+            const x = c * pieceWidth + pieceWidth / 2;
+            const y = r * pieceHeight + pieceHeight - (pieceHeight * 0.05);
+            ctx.fillText((i+1).toString(), x, y);
+          }
+        } else if (numberMode.value === 'four-grid') {
+          // 四宫格标序号
+          ctx.font = `bold ${pieceHeight/10}px ZCOOL KuaiLe`;
+          ctx.textBaseline = 'bottom';
+          let number = 1;
+          for (let i = 0; i < imagesCount; i++) {
+            const r = Math.floor(i / cols);
+            const c = i % cols;
+            const baseX = c * pieceWidth;
+            const baseY = r * pieceHeight;
+            const subWidth = pieceWidth / 2;
+            const subHeight = pieceHeight / 2;
+            const offsetTop = pieceHeight * 0.025;
+            const offsetBottom = pieceHeight * 0.05;
+            // Top-left
+            const xTL = baseX + subWidth / 2;
+            const yTL = baseY + subHeight - offsetTop;
+            ctx.fillText(number.toString(), xTL, yTL);
+            number++;
+            // Top-right
+            const xTR = baseX + 3 * subWidth / 2;
+            const yTR = baseY + subHeight - offsetTop;
+            ctx.fillText(number.toString(), xTR, yTR);
+            number++;
+            // Bottom-left
+            const xBL = baseX + subWidth / 2;
+            const yBL = baseY + pieceHeight - offsetBottom;
+            ctx.fillText(number.toString(), xBL, yBL);
+            number++;
+            // Bottom-right
+            const xBR = baseX + 3 * subWidth / 2;
+            const yBR = baseY + pieceHeight - offsetBottom;
+            ctx.fillText(number.toString(), xBR, yBR);
+            number++;
+          }
+        }
+      } else {
+        // Hide numbers: restore original image
+        ctx.putImageData(originalImageData, 0, 0);
+      }
+      numbersVisible = !numbersVisible;
+    }
+
+    function loadImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.src = reader.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function getAspectRatio(img) {
+      return (img.width / img.height).toFixed(2);
+    }
+
+    function downloadImage() {
+      const link = document.createElement('a');
+      link.download = '拼图.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  </script>
+</body>
+</html>
