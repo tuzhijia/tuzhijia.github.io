@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>秃秃の水印机 - 秃秃在线工具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Lato&family=Montserrat&family=Open+Sans&family=Noto+Sans+SC&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: #E1E1E7;
+            color: #333;
+        }
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #677397;
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            color: white;
+            z-index: 1000;
+        }
+        .header h1 {
+            margin: 0;
+            padding: 0 20px;
+            font-size: 1.5em;
+            flex-grow: 1;
+        }
+        /* Hamburger Button */
+        #menu-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            height: 24px;
+            width: 30px;
+            margin-left: 10px;
+        }
+        #menu-button span {
+            display: block;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+        }
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: #A1A7C5;
+            padding-top: 60px;
+            transition: left 0.3s;
+            overflow-y: auto;
+            z-index: 999;
+        }
+        .sidebar.open {
+            left: 0;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar li {
+            margin: 0;
+            padding: 0;
+        }
+        .sidebar a {
+            display: block;
+            padding: 15px 20px;
+            color: #333;
+            text-decoration: none;
+        }
+        .sidebar a:hover {
+            background-color: #ADBFDF;
+        }
+        /* Main content */
+        .content {
+            margin-top: 60px;
+            padding: 20px;
+        }
+        .section {
+            background-color: #CBE2EE;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        .section h3 {
+            margin-top: 0;
+            font-size: 1.2em;
+            color: #677397;
+        }
+        /* Inputs and controls */
+        .file-input {
+            display: block;
+            margin: 10px 0;
+        }
+        .color-input, .opacity-input, .size-input, .rotate-input, .font-select, .style-select {
+            margin: 5px 0;
+        }
+        /* Preview area */
+        #preview-area {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+        .preview-item {
+            position: relative;
+            margin-right: 10px;
+        }
+        .preview-item img {
+            max-height: 100px;
+            border: 1px solid #ccc;
+        }
+        /* Export options */
+        .export-options {
+            margin: 10px 0;
+        }
+        /* Custom background */
+        #bg-color-picker {
+            margin-left: 10px;
+        }
+        /* Theme toggle */
+        #theme-toggle {
+            margin: 0 15px;
+            padding: 5px 10px;
+            background-color: #ADBFDF;
+            border: none;
+            color: #333;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        /* Responsive */
+        @media (max-width: 600px) {
+            .sidebar { width: 200px; }
+            .header h1 { font-size: 1.2em; }
+            #preview-area .preview-item img {
+                max-height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button id="menu-button" aria-label="Toggle menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <h1>秃秃の水印机</h1>
+        <button id="theme-toggle">切换日夜模式</button>
+    </div>
+    <nav id="sidebar" class="sidebar">
+        <ul>
+            <li><a href="index.html">主页</a></li>
+            <li><a href="pintu.html">在线拼图</a></li>
+            <li><a href="shuiyin.html">秃秃の水印机</a></li>
+        </ul>
+    </nav>
+    <div class="content">
+        <section class="section import-images">
+            <h3>图片导入</h3>
+            <input type="file" id="image-input" class="file-input" accept="image/*" multiple>
+            <p>您可以多选上传多张图片。</p>
+        </section>
+        <section class="section import-watermark">
+            <h3>水印导入</h3>
+            <input type="file" id="watermark-input" class="file-input" accept="image/*">
+            <p>上传用户水印图片，系统将自动抠图背景。完成后可使用手动修复功能。</p>
+            <button id="fix-watermark">手动修复水印</button>
+        </section>
+        <section class="section diy-watermark">
+            <h3>DIY 水印样式</h3>
+            <p>选择预设样式或自定义设置：</p>
+            <div class="style-select">
+                <button class="style-btn">样式1</button>
+                <button class="style-btn">样式2</button>
+                <button class="style-btn">样式3</button>
+                <button class="style-btn">样式4</button>
+                <button class="style-btn">样式5</button>
+            </div>
+            <p>自定义文本水印：</p>
+            <input type="text" id="wm-text" placeholder="输入水印文字" class="file-input">
+            <label>颜色: <input type="color" id="wm-color" class="color-input" value="#000000"></label><br>
+            <label>透明度: <input type="range" id="wm-opacity" class="opacity-input" min="0" max="100" value="100"></label><br>
+            <label>大小: <input type="range" id="wm-size" class="size-input" min="10" max="200" value="100"></label><br>
+            <label>旋转: <input type="range" id="wm-rotate" class="rotate-input" min="0" max="360" value="0"></label><br>
+            <label>字体:
+                <select id="wm-font" class="font-select">
+                    <option value="Roboto">Roboto</option>
+                    <option value="Lato">Lato</option>
+                    <option value="Montserrat">Montserrat</option>
+                    <option value="Open Sans">Open Sans</option>
+                    <option value="Noto Sans SC">Noto Sans SC</option>
+                    <option value="简约">简约</option>
+                    <option value="春日兔兔">春日兔兔</option>
+                    <option value="电子竞技">电子竞技</option>
+                </select>
+            </label>
+        </section>
+        <section class="section preview">
+            <h3>图片预览</h3>
+            <div id="preview-area">
+                <!-- 导入的图片预览缩略图 -->
+            </div>
+            <p>横向滑动查看所有导入图片，可多选选中要操作的图片。</p>
+        </section>
+        <section class="section watermark-ops">
+            <h3>水印操作</h3>
+            <p>您可以在选中的图片上拖动、缩放和旋转水印。另可复制或删除水印。</p>
+            <button id="copy-watermark">复制水印</button>
+            <button id="delete-watermark">删除水印</button>
+        </section>
+        <section class="section export">
+            <h3>导出图片</h3>
+            <div class="export-options">
+                <label><input type="radio" name="quality" value="high" checked> 高清导出</label>
+                <label><input type="radio" name="quality" value="low"> 压缩导出</label>
+            </div>
+            <button id="export-btn">导出选中图片</button>
+        </section>
+        <section class="section custom-bg">
+            <h3>背景设置</h3>
+            <label>背景颜色: <input type="color" id="bg-color-picker"></label>
+        </section>
+    </div>
+    <script>
+        // Toggle sidebar
+        const menuButton = document.getElementById('menu-button');
+        const sidebar = document.getElementById('sidebar');
+        menuButton.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+        // Theme toggle (day/night)
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            if (document.body.classList.contains('dark-mode')) {
+                document.body.style.backgroundColor = '#333';
+                document.body.style.color = '#EEE';
+                document.querySelector('.header').style.backgroundColor = '#333';
+            } else {
+                document.body.style.backgroundColor = '#E1E1E7';
+                document.body.style.color = '#333';
+                document.querySelector('.header').style.backgroundColor = '#677397';
+            }
+        });
+        // Custom background color
+        const bgPicker = document.getElementById('bg-color-picker');
+        bgPicker.addEventListener('input', (e) => {
+            document.body.style.backgroundColor = e.target.value;
+        });
+    </script>
+</body>
+</html>
