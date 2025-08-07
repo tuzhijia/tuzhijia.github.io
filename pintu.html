@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>秃秃の拼图器</title>
   <link 
-href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" 
-rel="stylesheet">
+    href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" 
+    rel="stylesheet">
   <style>
     body {
       margin: 0;
@@ -146,9 +146,25 @@ rel="stylesheet">
       <input type="number" id="cols" value="3" min="1">
     </div>
     <div class="row">
-      <label>序号颜色：</label>
+      <label>颜色A：</label>
       <input type="color" id="colorPicker" value="#ffffff">
       <input type="text" id="hexColor" placeholder="#ffffff">
+    </div>
+    <div class="row">
+      <label>颜色模式：</label>
+      <select id="colorMode">
+        <option value="single">单色</option>
+        <option value="double">双拼色</option>
+      </select>
+    </div>
+    <div class="row hidden" id="colorBRow">
+      <label>颜色B：</label>
+      <input type="color" id="colorPickerB" value="#000000">
+      <input type="text" id="hexColorB" placeholder="#000000">
+    </div>
+    <div class="row hidden" id="gradientRow">
+      <label>渐变效果：</label>
+      <input type="checkbox" id="gradientToggle">
     </div>
     <div class="row">
       <label>背景颜色：</label>
@@ -191,6 +207,10 @@ rel="stylesheet">
     const bgHexColor = document.getElementById('bgHexColor');
     const bgColorPicker = document.getElementById('bgColorPicker');
     const numberMode = document.getElementById('numberMode');
+    const colorPickerB = document.getElementById('colorPickerB');
+    const hexColorB = document.getElementById('hexColorB');
+    const colorMode = document.getElementById('colorMode');
+    const gradientToggle = document.getElementById('gradientToggle');
     
     let theme = 'light';
     let bgImage = null;
@@ -204,7 +224,21 @@ rel="stylesheet">
     hexColor.addEventListener('input', () => {
       colorPicker.value = hexColor.value;
     });
-    
+    colorPickerB.addEventListener('input', () => {
+      hexColorB.value = colorPickerB.value;
+    });
+    hexColorB.addEventListener('input', () => {
+      colorPickerB.value = hexColorB.value;
+    });
+    colorMode.addEventListener('change', () => {
+      if (colorMode.value === 'double') {
+        document.getElementById('colorBRow').classList.remove('hidden');
+        document.getElementById('gradientRow').classList.remove('hidden');
+      } else {
+        document.getElementById('colorBRow').classList.add('hidden');
+        document.getElementById('gradientRow').classList.add('hidden');
+      }
+    });
     bgHexColor.value = bgColorPicker.value;
     bgColorPicker.addEventListener('input', () => {
       bgHexColor.value = bgColorPicker.value;
@@ -293,7 +327,23 @@ rel="stylesheet">
       if (!numbersVisible) {
         ctx.putImageData(originalImageData, 0, 0);
         ctx.textAlign = 'center';
-        ctx.fillStyle = hexColor.value || '#ffffff';
+        const mode = colorMode.value;
+        if (mode === 'single') {
+          ctx.fillStyle = hexColor.value || '#ffffff';
+        } else {
+          const colorA = colorPicker.value;
+          const colorB = colorPickerB.value;
+          if (gradientToggle.checked) {
+            const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            grad.addColorStop(0, colorA);
+            grad.addColorStop(1, colorB);
+            ctx.fillStyle = grad;
+          } else {
+            ctx.fillStyle = colorB || '#ffffff';
+            ctx.strokeStyle = colorA || '#000000';
+            ctx.lineWidth = pieceHeight / 50;
+          }
+        }
         if (numberMode.value === 'normal') {
           ctx.font = `bold ${pieceHeight/5}px ZCOOL KuaiLe`;
           ctx.textBaseline = 'bottom';
@@ -302,33 +352,40 @@ rel="stylesheet">
             const c = i % cols;
             const x = c * pieceWidth + pieceWidth / 2;
             const y = r * pieceHeight + pieceHeight - (pieceHeight * 0.05);
-            ctx.fillText((i+1).toString(), x, y);
+            if (mode === 'double' && !gradientToggle.checked) {
+              ctx.fillText((i+1).toString(), x, y);
+              ctx.strokeText((i+1).toString(), x, y);
+            } else {
+              ctx.fillText((i+1).toString(), x, y);
+            }
           }
         } else {
           ctx.font = `bold ${pieceHeight/10}px ZCOOL KuaiLe`;
           ctx.textBaseline = 'bottom';
           let number = 1;
-          for (let i = 0; i < imagesCount; i++) {
-            const r = Math.floor(i / cols);
-            const c = i % cols;
-            const baseX = c * pieceWidth;
-            const baseY = r * pieceHeight;
-            const subWidth = pieceWidth / 2;
-            const subHeight = pieceHeight / 2;
-            const offsetTop = pieceHeight * 0.025;
-            const offsetBottom = pieceHeight * 0.05;
-            const xTL = baseX + subWidth / 2;
-            const yTL = baseY + subHeight - offsetTop;
-            ctx.fillText(number.toString(), xTL, yTL); number++;
-            const xTR = baseX + 3 * subWidth / 2;
-            const yTR = baseY + subHeight - offsetTop;
-            ctx.fillText(number.toString(), xTR, yTR); number++;
-            const xBL = baseX + subWidth / 2;
-            const yBL = baseY + pieceHeight - offsetBottom;
-            ctx.fillText(number.toString(), xBL, yBL); number++;
-            const xBR = baseX + 3 * subWidth / 2;
-            const yBR = baseY + pieceHeight - offsetBottom;
-            ctx.fillText(number.toString(), xBR, yBR); number++;
+          for (let subR = 0; subR < rows * 2; subR++) {
+            for (let subC = 0; subC < cols * 2; subC++) {
+              const mainR = Math.floor(subR / 2);
+              const mainC = Math.floor(subC / 2);
+              const i = mainR * cols + mainC;
+              if (i < imagesCount) {
+                const baseX = mainC * pieceWidth;
+                const baseY = mainR * pieceHeight;
+                const subWidth = pieceWidth / 2;
+                const subHeight = pieceHeight / 2;
+                const offsetTop = pieceHeight * 0.025;
+                const offsetBottom = pieceHeight * 0.05;
+                const x = baseX + (subC % 2 === 0 ? subWidth / 2 : 3 * subWidth / 2);
+                const y = baseY + (subR % 2 === 0 ? subHeight - offsetTop : pieceHeight - offsetBottom);
+                if (mode === 'double' && !gradientToggle.checked) {
+                  ctx.fillText(number.toString(), x, y);
+                  ctx.strokeText(number.toString(), x, y);
+                } else {
+                  ctx.fillText(number.toString(), x, y);
+                }
+                number++;
+              }
+            }
           }
         }
       } else {
