@@ -152,7 +152,8 @@
       <label>填充颜色：</label>
       <input type="color" id="colorB" value="#FFFFFF">
       <input type="text" id="hexB" placeholder="#FFFFFF">
-      <button onclick="setTransparent()">透明色</button>
+      <button onclick="setTransparent()" title="只显示边框，没有填充">透明色</button>
+      <span style="margin-left:5px;color:#666;">(只显示边框)</span>
     </div>
     <div class="row">
       <label>字体选择：</label>
@@ -346,7 +347,7 @@
               const y = r * pieceHeight + pieceHeight - (pieceHeight * 0.05);
               const fontSize = pieceHeight / 5;
               ctx.font = `bold ${fontSize}px ${numberFont}`;
-              ctx.lineWidth = 1;
+              ctx.lineWidth = 0.5;
               ctx.strokeStyle = hexA.value || '#000000';
               ctx.fillStyle = hexB.value || 'transparent';
               if (hexB.value) {
@@ -393,28 +394,28 @@
           ctx.font = `bold ${pieceHeight/10}px ${numberFont}`;
           ctx.textBaseline = 'bottom';
           let number = 1;
-          for (let i = 0; i < imagesCount; i++) {
-            const r = Math.floor(i / cols);
-            const c = i % cols;
-            const baseX = c * pieceWidth;
-            const baseY = r * pieceHeight;
-            const subWidth = pieceWidth / 2;
-            const subHeight = pieceHeight / 2;
-            const offsetTop = pieceHeight * 0.025;
-            const offsetBottom = pieceHeight * 0.05;
-            const xTL = baseX + subWidth / 2;
-            const yTL = baseY + subHeight - offsetTop;
-            ctx.fillStyle = hexB.value || '#ffffff';
-            ctx.fillText(number.toString(), xTL, yTL); number++;
-            const xTR = baseX + 3 * subWidth / 2;
-            const yTR = baseY + subHeight - offsetTop;
-            ctx.fillText(number.toString(), xTR, yTR); number++;
-            const xBL = baseX + subWidth / 2;
-            const yBL = baseY + pieceHeight - offsetBottom;
-            ctx.fillText(number.toString(), xBL, yBL); number++;
-            const xBR = baseX + 3 * subWidth / 2;
-            const yBR = baseY + pieceHeight - offsetBottom;
-            ctx.fillText(number.toString(), xBR, yBR); number++;
+          for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+              const baseX = c * pieceWidth;
+              const baseY = r * pieceHeight;
+              const subWidth = pieceWidth / 2;
+              const subHeight = pieceHeight / 2;
+              const offsetTop = pieceHeight * 0.025;
+              const offsetBottom = pieceHeight * 0.05;
+              const xTL = baseX + subWidth / 2;
+              const yTL = baseY + subHeight - offsetTop;
+              ctx.fillStyle = hexB.value || '#ffffff';
+              ctx.fillText(number.toString(), xTL, yTL); number++;
+              const xTR = baseX + 3 * subWidth / 2;
+              const yTR = baseY + subHeight - offsetTop;
+              ctx.fillText(number.toString(), xTR, yTR); number++;
+              const xBL = baseX + subWidth / 2;
+              const yBL = baseY + pieceHeight - offsetBottom;
+              ctx.fillText(number.toString(), xBL, yBL); number++;
+              const xBR = baseX + 3 * subWidth / 2;
+              const yBR = baseY + pieceHeight - offsetBottom;
+              ctx.fillText(number.toString(), xBR, yBR); number++;
+            }
           }
         }
       } else {
